@@ -1,2 +1,2 @@
 # MicroNumitron
-Source code for Had.io square in project.
+Source code for Had.io square inch project.
