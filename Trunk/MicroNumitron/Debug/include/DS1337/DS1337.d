@@ -1,4 +1,5 @@
-Sketch.d Sketch.o: .././Sketch.cpp ../include\arduino/Arduino.h \
+include/DS1337/DS1337.d include/DS1337/DS1337.o: \
+ ../include/DS1337/DS1337.cpp ../include\arduino/Arduino.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\stdlib.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\gcc\avr\4.9.2\include\stddef.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\gcc\avr\4.9.2\include\stdbool.h \
@@ -31,7 +32,7 @@ Sketch.d Sketch.o: .././Sketch.cpp ../include\arduino/Arduino.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay_basic.h \
  ../include\arduino/Arduino.h ../include\arduino/pins_arduino.h \
  ../include\Wire/Wire.h ../include\arduino/Stream.h \
- ../include\RTClib-master/RTClib.h ../include\EEPROM/EEPROM.h
+ ../include/DS1337/DS1337.h
 
 ../include\arduino/Arduino.h:
 
@@ -111,6 +112,4 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 
 ../include\arduino/Stream.h:
 
-../include\RTClib-master/RTClib.h:
-
-../include\EEPROM/EEPROM.h:
+../include/DS1337/DS1337.h:

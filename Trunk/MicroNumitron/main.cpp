@@ -14,31 +14,32 @@
 
 //Fuse settings
 /*
-BOOTSZ = 1024W_1C00
-BOOTRST = [ ]
-RSTDISBL = [ ]
-DWEN = [ ]
-SPIEN = [X]
-WDTON = [ ]
-EESAVE = [X]
-BODLEVEL = 1V8
-CKDIV8 = [ ]
-CKOUT = [ ]
-SUT_CKSEL = INTRCOSC_8MHZ_6CK_14CK_65MS
 
-EXTENDED = 0xF9 (valid)
-HIGH = 0xD6 (valid)
-LOW = 0xE2 (valid)
 */
 
 //Includes
 #include <Arduino.h>
 #include <Wire.h>
-#include <RTClib.h>
+//#include <RTClib.h>
 #include "EEPROM.h"				//Store persistent variables in eeprom.
+#include <DS1337/DS1337.h>		//Updated to work with arduino.h and wire.h 2015
+#include <avr/power.h>
+#include <avr/sleep.h>
 
 //Defines
-#define F_CPU 8000000L
+//#define F_CPU 8000000L
+
+//DS1337 defines do not mess with.
+#define DS1337_ADDR  					0x68
+#define DS1337_SQW_MASK					(0x03 << 2)
+#define DS1337_SQW_1HZ        			(0x00 << 2)
+#define DS1337_REG_CONTROL              0x0E
+#define READ_ERROR  					5
+#define DS1337_SQW_A2         			(0x01 << 2)
+#define DS1337_SQW_32768HZ    			(0x03 << 2)
+#define DS1337_SQW_8192HZ     			(0x02 << 2)
+#define DS1337_SQW_4096HZ     			(0x01 << 2)
+#define DS1337_SQW_1HZ        			(0x00 << 2)
 
 //#define I2C_PULL_UP			//used to activate or deactivate I2C pull ups.
 #define SCL_PORT    PORTC		// pin assignments specific to the ATmega328p
@@ -56,19 +57,18 @@ int CLOCK = 7;              // Storage register clock input
 int LM35 = A1;              //ADC used for the Temp sensor LM35
 
 //Global variables
-int PPS_TIMER = 20;         //How often we want to update the system in seconds
-int PPS_COUNT = 0;          //used in interrupt routine.
-int TIME_DELAY = 500;
+int PPS_TIMER = 10;         //How often we want to update the system in seconds
 boolean tempDisplay = true;      // used to set whether the display shows temperature
 boolean tempCORF = false;	     // false for C and true for F.
 float Temperature_C = 0;        //our temp in C
 float Temperature = 0;          //value read from temp sensor
 int AM_PM = 0;					//0 = AM 1 = PM
+int SECONDS_LAST = 0;
+int count = 0;
+int count_internal = 0;
 
-//Constants
-const int Delay_Time = 200;
-
-RTC_DS1307 rtc;             //Creating a new RTC object.
+//RTC_DS1307 rtc;             //Creating a new RTC object.
+DS1337 RTC = DS1337();
 
 //Char array, stores display data.
 byte DATA_ARRAY[20] = { 0b01000000,//0
@@ -93,23 +93,29 @@ byte DATA_ARRAY[20] = { 0b01000000,//0
 };
 int Temp_Array[5] = {0,0,0,0,0};
 
-///////////////////////////////////////////////////////////
-//RTC PWM pin modes, best to leave this setting at 1Hz
-///////////////////////////////////////////////////////////
-//Modes                           16            17                18              19
-Ds1307SqwPinMode modes[] = {SquareWave1HZ, SquareWave4kHz, SquareWave8kHz, SquareWave32kHz};
-
 //Prototypes.
 void(* resetFunc)(void)=0; //declare reset function at address 0
 void setup();
 void loop();
+void gotoSleep(int _delay);
 void Interrupt_Update();
 void Init();
+void Internal_Update();
 void Update_Display();
 float readTemp (int internal);
 int splitInt(int pos, int value);
 int convertTime(int value);
 void BlankDisplay();
+
+
+//DS1337 control functions
+uint8_t ds1337_set_control_bits(uint8_t mask);
+uint8_t ds1337_set_control(uint8_t ctrl);
+uint8_t i2c_write(uint8_t addr, uint8_t* buf, uint8_t num);
+uint8_t ds1337_get_control(uint8_t* ctrl);
+uint8_t i2c_write_1(uint8_t addr, uint8_t b);
+uint8_t i2c_read(uint8_t addr, uint8_t* buf, uint8_t num);
+uint8_t ds1337_clear_control_bits(uint8_t mask);
 
 void setup()
 {
@@ -118,31 +124,35 @@ void setup()
 	Init();
 	
 	//clear display at start up.
-	BlankDisplay();
+	//BlankDisplay();
 
 	//allow interrupts
 	sei();
 	
 	//Interrupts
-	attachInterrupt(0, Interrupt_Update, FALLING);
-
+	attachInterrupt(0, Interrupt_Update, RISING);
 }
 
 void loop()
 {
-	if (PPS_COUNT == PPS_TIMER)
+	//Serial.print("Im awake.\r\n");
+	
+	//update the RTC buffers
+	RTC.readTime();
+	if(RTC.getSeconds() < PPS_TIMER){SECONDS_LAST = 0;}
+		
+	if(RTC.getSeconds() - SECONDS_LAST >= PPS_TIMER)
 	{
-		detachInterrupt(0);
+		//detachInterrupt(0);
 		//Start the internal update
-		//Internal_Update();
+		Internal_Update();
 		
 		//Update the VFD display
-		Update_Display();
-		PPS_COUNT = 0;
-		attachInterrupt(0, Interrupt_Update, RISING);
+		//Update_Display();
 		
+		SECONDS_LAST = RTC.getSeconds();
 		//Flush the serial buffer for good measure.
-		//Serial.flush();
+		Serial.flush();
 	}
 	
 	if (digitalRead(Select_BTN)==HIGH)
@@ -154,13 +164,34 @@ void loop()
 	{
 		//setALARM();
 	}
+	
+	//attachInterrupt(0, Interrupt_Update, FALLING); // set our interrupt backup.
+	
+	//set the clock to sleep
+	//Serial.print("Going to sleep.\r\n");
 
+	gotoSleep(0);
+	Serial.print(count,DEC);
+	if(count == 9){count = 0;}
+	count+=1;
+	
 }
 
-void Interrupt_Update()
+void gotoSleep(int _delay)
 {
-	//foo.
+	//allow for any tx buffer to be sent to the 
+	//computer.
+	delay(5);		// the only delays used in this code.
+	//go to sleep.
+	sleep_cpu();
+	//upon system boot the clock is set to 65ms
+	//settling time. It seems we may need to do this 
+	//every time the cpu comes out of sleep or things go
+	//for a toss.
+	delay(_delay);	//<- this delay is only used to allow the crystal to settle if needed.
 }
+
+void Interrupt_Update(){} //This is just to attach an interrupt
 
 void Init()
 {
@@ -169,10 +200,9 @@ void Init()
 	///////////////////////////////////////////////////////////
 	
 	//Coms will be setup later.
+	Serial.begin(115200);
 	
 	Wire.begin();
-	
-	rtc.begin();
 	
 	#ifdef I2C_PULL_UP
 	//force TWI pull ups just in case.
@@ -187,6 +217,7 @@ void Init()
 	SDA_PORT &= _BV(SDA_BIT);   // disable pull up on TWI data line
 	#endif
 	
+	RTC.start(); //starts the DS1337
 	///////////////////////////////////////////////////////////
 	//Pin Functions
 	///////////////////////////////////////////////////////////
@@ -198,44 +229,158 @@ void Init()
 	pinMode(LATCH, OUTPUT);
 	pinMode(Select_BTN, INPUT);
 	pinMode(Next_BTN, INPUT);
-	//pinMode(FILL, OUTPUT);
 	pinMode(LM35, INPUT);
-	//pinMode(ALARM, OUTPUT);
-	//digitalWrite(ALARM, LOW); //this may have changed on the board.
 	
 	///////////////////////////////////////////////////////////
 	//If the RTC is not currently set to the correct time set the time
 	//based on the time used when compiling this firmware.
 	///////////////////////////////////////////////////////////
-	if (! rtc.isrunning())
+	if(!RTC.time_is_set())
 	{
-		Serial.println(F("RTC is NOT running!, Check wiring setup.\r\n"));
-		delay(Delay_Time);
-
-		rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-		Serial.print(F("RTC Time set!"));
+		DateTime now = DateTime(F(__DATE__),F(__TIME__));
+		Serial.print(F("RTC is NOT running!, Setting to "));
+		Serial.print(now.day(),DEC);
+		Serial.print("/");
+		Serial.print(now.month(),DEC);
+		Serial.print("/");
+		Serial.print(now.year(),DEC);
+		Serial.print(" ");
+		Serial.print(now.hour(),DEC);
+		Serial.print(":");
+		Serial.print(now.minute(),DEC);
+		Serial.print(":");
+		Serial.print(now.second(),DEC);
+		Serial.print("\r\n");
+		//setting to build header time.
+		RTC.setSeconds(now.second());
+		RTC.setMinutes(now.minute());
+		RTC.setHours(now.hour());
+		RTC.setDays(now.day());
+		RTC.setMonths(now.month());
+		RTC.setYears(now.year());
+		RTC.writeTime();
+	}
+	
+	delay(10);
+	
+	if(!RTC.time_is_set())
+	{
+		Serial.print(F("Time did not set correctly, check wiring.\r\n"));
+	}
+	else
+	{
+		Serial.print(F("Time should be set.\r\n"));
 	}
 	
 	///////////////////////////////////////////////////////////
-	//This is setting the RTC Square wave pin output to 32.7kHz
+	//This is setting the RTC Square wave pin output to 1Hz
 	//We will be using this as our interrupt to update the time.
 
-	rtc.writeSqwPinMode(modes[0]);
+	//INTA alarm 1 will be set to 500ms cycles to set the delay
+	//between display digits.
+	
+	//rtc.writeSqwPinMode(modes[0]);
+	//RTC.enable_interrupt();
+	//RTC.setAlarmRepeat(EVERY_SECOND);
+	//RTC.writeAlarm();
+	ds1337_clear_control_bits(DS1337_SQW_MASK);
+	ds1337_set_control(DS1337_SQW_1HZ);
+	delay(10);
 	///////////////////////////////////////////////////////////
+	
+	// Setting up sleep mode.
+	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+	sleep_enable();
 }
+
+void Internal_Update()
+{
+	///////////////////////////////////////////////////////////
+	//This function internally updates everything.
+	///////////////////////////////////////////////////////////
+	int HR = 0;
+	
+	//DateTime now = rtc.now();
+	RTC.readTime();
+	
+	//This is mostly for debug purposes.
+	Serial.print(F(" Time/Date: "));
+	Serial.print(RTC.getYears(), DEC);
+	Serial.print('/');
+	Serial.print(RTC.getMonths(), DEC);
+	Serial.print('/');
+	Serial.print(RTC.getDays(), DEC);
+	Serial.print(' ');
+	//Converting from 24hr to 12hr time.
+	HR = RTC.getHours();
+	
+	//This tells us if its AM or PM
+	//clock defaults to AM when first
+	//started until stored in eeprom.
+	if((HR <= 23) && (HR > 11))
+	{
+		AM_PM = 1;
+	}
+	else
+	{
+		AM_PM = 0;
+	}
+	
+	//convert 24hr clock to 12hr clock
+	HR = convertTime(HR);
+	
+	Serial.print(HR, DEC);
+	Serial.print(':');
+	//Serial.print(now.minute(), DEC);
+	Serial.print(RTC.getMinutes(), DEC);
+	Serial.print(':');
+	//Serial.print(now.second(), DEC);
+	Serial.print(RTC.getSeconds(), DEC);
+	Serial.print(" ");
+	if(AM_PM == 0)
+	{
+		Serial.print(F("AM"));
+	}
+	else{Serial.print(F("PM"));}
+	
+	//outputting temp.
+	Serial.print(" ");
+	//Temperature_C = readTemp(0);
+	Serial.print(readTemp(0));
+	//Serial.print(Temperature_C);
+	Serial.print(F("°C "));
+	/*
+	if(checkAlarm(HR,now.minute()) == 1)
+	{
+		soundAlarm();
+	}
+*/
+	//Clearing the Terminal screen
+	//This is hacked.
+	//Serial.write(27);
+	//Serial.print("[H");
+	Serial.print(count_internal);
+	count_internal +=1;
+	Serial.print("\r\n");
+}
+
 
 void Update_Display()
 {
 	///////////////////////////////////////////////////////////
 	//This function updates the display on the VFD Tube.
 	///////////////////////////////////////////////////////////
-	DateTime now = rtc.now();
+	//DateTime now = rtc.now();
+	RTC.readTime();
+	
 	int HR = 0;
 	int MN = 0;
 
-	MN = now.minute();
-	HR = now.hour();
-
+	//MN = now.minute();
+	MN = RTC.getMinutes();
+	//HR = now.hour();
+	HR = RTC.getHours();
+	
 	//Converting 24HR time to 12HR format.
 	HR = convertTime(HR);
 	
@@ -247,16 +392,16 @@ void Update_Display()
 		digitalWrite(LATCH, LOW);
 		shiftOut(DATA_PIN, CLOCK, LSBFIRST, DATA_ARRAY[splitInt(x,HR)]);
 		digitalWrite(LATCH, HIGH);
-		delay(TIME_DELAY);
-		
+		//delay(TIME_DELAY);
+		sleep_cpu();
 	}
 	
 	//Dash between HH:MM to separate Hours and minutes.
 	digitalWrite(LATCH, LOW);
 	shiftOut(DATA_PIN, CLOCK, LSBFIRST, DATA_ARRAY[10]);
 	digitalWrite(LATCH, HIGH);
-	delay(TIME_DELAY);
-
+	//delay(TIME_DELAY);
+	sleep_cpu();
 
 	//display minutes first tens then one's position
 	Temp_Array[3] = splitInt(0,MN);
@@ -266,7 +411,8 @@ void Update_Display()
 		digitalWrite(LATCH, LOW);
 		shiftOut(DATA_PIN, CLOCK, LSBFIRST, DATA_ARRAY[splitInt(y,MN)]);
 		digitalWrite(LATCH, HIGH);
-		delay(TIME_DELAY);
+		//delay(TIME_DELAY);
+		sleep_cpu();
 	}
 
 	//Blank display
@@ -282,14 +428,16 @@ void Update_Display()
 			digitalWrite(LATCH, LOW);
 			shiftOut(DATA_PIN, CLOCK, LSBFIRST, DATA_ARRAY[splitInt(z,readTemp(1))]);
 			digitalWrite(LATCH, HIGH);
-			delay(TIME_DELAY);
+			//delay(TIME_DELAY);
+			sleep_cpu();
 		}
 
 		//display a degree symbol
 		digitalWrite(LATCH, LOW);
 		shiftOut(DATA_PIN, CLOCK, LSBFIRST, DATA_ARRAY[15]);
 		digitalWrite(LATCH, HIGH);
-		delay(TIME_DELAY);
+		//delay(TIME_DELAY);
+		sleep_cpu();
 		
 		BlankDisplay();
 		if(tempCORF == false)
@@ -298,7 +446,8 @@ void Update_Display()
 			digitalWrite(LATCH, LOW);
 			shiftOut(DATA_PIN, CLOCK, LSBFIRST, DATA_ARRAY[16]);
 			digitalWrite(LATCH, HIGH);
-			delay(TIME_DELAY);
+			//delay(TIME_DELAY);
+			sleep_cpu();
 
 			BlankDisplay();
 		}
@@ -308,7 +457,8 @@ void Update_Display()
 			digitalWrite(LATCH, LOW);
 			shiftOut(DATA_PIN, CLOCK, LSBFIRST, DATA_ARRAY[16]);
 			digitalWrite(LATCH, HIGH);
-			delay(TIME_DELAY);
+			//delay(TIME_DELAY);
+			sleep_cpu();
 
 			BlankDisplay();
 		}
@@ -323,13 +473,20 @@ float readTemp (int internal)
 
 	Temperature = 0;
 	if (!internal) //if internal == 0
-	{
+	{//Temperature += analogRead(LM35);
 
 		for(int x = 0; x <= 99; x++)
 		{
 			Temperature += analogRead(LM35);
 		}
-		Temperature_C = Temperature * ((5.0*1000/1024));
+		Temperature/100;
+
+		// -11.69mv/C
+		//The LM20 degree per C is inversely proportional
+		//to its output at 1.574V T = 25C @ 303mV T = 130C
+		//this equation has been calibrated for my office. Thus the
+		//-7.4C.
+		Temperature_C = (((11.69/Temperature)*(1024))*100)-7.4;//(1024))*100;
 		return Temperature_C;
 	}
 	else
@@ -398,5 +555,124 @@ void BlankDisplay()
 	shiftOut(DATA_PIN, CLOCK, LSBFIRST, 0b11111111);
 	digitalWrite(LATCH, HIGH);
 	
-	delay(TIME_DELAY);
+	//delay(TIME_DELAY);
+	sleep_cpu();
+}
+
+/**
+ * \brief Set the specified bits in the control register.
+ *
+ * \param mask A mask specifying which bits to set. (High bits will be set.)
+ *
+ * \return 0 on success; otherwise an I2C error.
+ */
+uint8_t ds1337_set_control_bits(uint8_t mask) { // set bits
+	uint8_t ctrl;
+	uint8_t res = ds1337_get_control(&ctrl);
+	if (res) { return res; }
+	ctrl |= mask;
+	return ds1337_set_control(ctrl);
+}
+
+
+/**
+ * \brief Set the value of the control register.
+ *
+ * \param ctrl The value to set. 
+ *
+ * \return 0 on success; otherwise an I2C error.
+ */
+uint8_t ds1337_set_control(uint8_t ctrl) {
+   uint8_t buf[2];
+   buf[0] = DS1337_REG_CONTROL;
+   buf[1] = ctrl;
+   return i2c_write(DS1337_ADDR, buf, 2);
+}
+
+/**
+ * \brief Write data to an I2C device. 
+ *
+ * \param addr The address of the device to which to write. 
+ * \param buf A pointer to a buffer from which to read the data. 
+ * \param num The number of bytes to write. 
+ *
+ * \return 0 on success; otherwise an I2C error.
+ */
+uint8_t i2c_write(uint8_t addr, uint8_t* buf, uint8_t num) {
+  Wire.beginTransmission(addr);
+  for (uint8_t i = 0; i < num; i++) {
+    Wire.write(buf[i]);
+  }
+  return Wire.endTransmission();
+}
+
+/**
+ * \brief Get the value of the control register.
+ *
+ * \param ctrl A pointer to a value in which to store the value of the control register. 
+ *
+ * \return 0 on success; otherwise an I2C error.
+ */
+uint8_t ds1337_get_control(uint8_t* ctrl) {
+   uint8_t res = i2c_write_1(DS1337_ADDR, DS1337_REG_CONTROL);
+   
+   if (res) {
+     return res;
+   }
+   
+   res = i2c_read(DS1337_ADDR, ctrl, 1);
+   
+   if (res) {
+     return res;
+   }
+   
+   return 0;
+}
+
+/**
+ * \brief Write a single byte to an I2C device. 
+ *
+ * \param addr The address of the device to which to write. 
+ * \param b The byte to write. 
+ *
+ * \return 0 on success; otherwise an I2C error.
+ */
+uint8_t i2c_write_1(uint8_t addr, uint8_t b) {
+  Wire.beginTransmission(addr);
+  Wire.write(b);
+  return Wire.endTransmission();
+}
+
+/**
+ * \brief Read data from an I2C device. 
+ *
+ * \param addr The address of the device from which to read. 
+ * \param buf A pointer to a buffer in which to store the data. 
+ * \param num The number of bytes to read. 
+ *
+ * \return 0 on success; otherwise an I2C error.
+ */
+uint8_t i2c_read(uint8_t addr, uint8_t* buf, uint8_t num) {
+  Wire.requestFrom(addr, num);
+  
+  if (Wire.available() < num) {
+    return READ_ERROR;
+  }
+  
+  for (uint8_t i = 0; i < num; i++) {
+    buf[i] = Wire.read();
+  }
+  
+  return 0;
+}
+
+/**
+ * \brief Clear the specified bits in the control register.
+ *
+ * \param mask A mask specifying which bits to clear. (High bits will be cleared.) 
+ *
+ * \return 0 on success; otherwise an I2C error.
+ */
+uint8_t ds1337_clear_control_bits(uint8_t mask) {
+	return ds1337_set_control(~mask);
 }

@@ -2,6 +2,8 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
+include\DS1337\DS1337.cpp
+
 main.cpp
 
 src\abi.cpp
