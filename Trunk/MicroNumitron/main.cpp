@@ -201,6 +201,9 @@ void Init()
 	///////////////////////////////////////////////////////////
 	
 	//Coms will be setup later.
+	//Better tuning caps are needed for the external crystal,
+	//the internal crystal is not much better and during battery power
+	//will correctly work at around 4800 baud. need to do auto bauding
 	Serial.begin(9600);
 	//Serial.begin(115200);
 	
