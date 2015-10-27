@@ -31,8 +31,8 @@ main.d main.o: .././main.cpp ../include\arduino/Arduino.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay_basic.h \
  ../include\arduino/Arduino.h ../include\arduino/pins_arduino.h \
  ../include\Wire/Wire.h ../include\arduino/Stream.h \
- ../include\EEPROM/EEPROM.h \
- ../../../../../Users/Owner/Desktop/ds1337/DS1337/DS1337.h \
+ ../include/RTCLIB/RTClib.h ../include\EEPROM/EEPROM.h \
+ ../include/DS1337/DS1337.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\power.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\sleep.h
 
@@ -114,9 +114,11 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 
 ../include\arduino/Stream.h:
 
+../include/RTCLIB/RTClib.h:
+
 ../include\EEPROM/EEPROM.h:
 
-../../../../../Users/Owner/Desktop/ds1337/DS1337/DS1337.h:
+../include/DS1337/DS1337.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\power.h:
 

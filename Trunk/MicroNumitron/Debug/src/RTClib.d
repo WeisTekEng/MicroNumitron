@@ -21,7 +21,7 @@ src/RTClib.d src/RTClib.o: ../src/RTClib.cpp ../include\Wire/Wire.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\version.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\fuse.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\lock.h \
- ../include\arduino/Printable.h ../src/RTClib.h \
+ ../include\arduino/Printable.h ../include/RTCLIB/RTClib.h \
  ../include\arduino/Arduino.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\gcc\avr\4.9.2\include\stdbool.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\math.h \
@@ -84,7 +84,7 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 
 ../include\arduino/Printable.h:
 
-../src/RTClib.h:
+../include/RTCLIB/RTClib.h:
 
 ../include\arduino/Arduino.h:
 

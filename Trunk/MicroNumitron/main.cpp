@@ -20,9 +20,10 @@
 //Includes
 #include <Arduino.h>
 #include <Wire.h>
-//#include <RTClib.h>
+#include <RTClib.h>
 #include "EEPROM.h"				//Store persistent variables in eeprom.
-#include <DS1337/DS1337.h>		//Updated to work with arduino.h and wire.h 2015
+//#include <DS1337/DS1337.h>		//Updated to work with arduino.h and wire.h 2015
+#include <DS1337.h>
 #include <avr/power.h>
 #include <avr/sleep.h>
 
@@ -170,7 +171,7 @@ void loop()
 	//set the clock to sleep
 	//Serial.print("Going to sleep.\r\n");
 
-	gotoSleep(0);
+	gotoSleep(100);
 	Serial.print(count,DEC);
 	if(count == 9){count = 0;}
 	count+=1;
@@ -179,17 +180,17 @@ void loop()
 
 void gotoSleep(int _delay)
 {
-	//allow for any tx buffer to be sent to the 
-	//computer.
-	delay(5);		// the only delays used in this code.
-	//go to sleep.
-	sleep_cpu();
-	//upon system boot the clock is set to 65ms
-	//settling time. It seems we may need to do this 
-	//every time the cpu comes out of sleep or things go
-	//for a toss.
-	delay(_delay);	//<- this delay is only used to allow the crystal to settle if needed.
+	sleep_enable();
+    byte adcsraSave = ADCSRA;
+    ADCSRA &= ~ bit(ADEN); // disable the ADC
+    set_sleep_mode(SLEEP_MODE_STANDBY);
+    sleep_cpu();
+    sleep_disable();
+    // re-enable what we disabled
+    ADCSRA = adcsraSave;
+	delay(_delay);	
 }
+
 
 void Interrupt_Update(){} //This is just to attach an interrupt
 
@@ -200,7 +201,8 @@ void Init()
 	///////////////////////////////////////////////////////////
 	
 	//Coms will be setup later.
-	Serial.begin(115200);
+	Serial.begin(9600);
+	//Serial.begin(115200);
 	
 	Wire.begin();
 	
