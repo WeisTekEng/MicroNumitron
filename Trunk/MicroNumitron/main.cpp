@@ -126,12 +126,6 @@ void setup()
 	
 	//clear display at start up.
 	//BlankDisplay();
-
-	//allow interrupts
-	sei();
-	
-	//Interrupts
-	attachInterrupt(0, Interrupt_Update, RISING);
 }
 
 void loop()
@@ -296,6 +290,12 @@ void Init()
 	// Setting up sleep mode.
 	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 	sleep_enable();
+	
+	//allow interrupts
+	sei();
+	
+	//Interrupts
+	attachInterrupt(0, Interrupt_Update, RISING);
 }
 
 void Internal_Update()

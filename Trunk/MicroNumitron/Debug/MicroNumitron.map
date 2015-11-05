@@ -1678,10 +1678,10 @@ END GROUP
                 0x00000b0c        0x8 main.o
                 0x00000b0c                _Z25ds1337_clear_control_bitsh
  .text._Z4Initv
-                0x00000b14      0x200 main.o
+                0x00000b14      0x210 main.o
                 0x00000b14                _Z4Initv
- .text.setup    0x00000d14       0x16 main.o
-                0x00000d14                setup
+ .text.setup    0x00000d24        0x6 main.o
+                0x00000d24                setup
  .text._ZN14HardwareSerial9availableEv
                 0x00000d2a       0x18 src/HardwareSerial.o
                 0x00000d2a                _ZN14HardwareSerial9availableEv
@@ -2268,24 +2268,24 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000    0x10436
+.debug_info     0x00000000    0x1043a
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000     0x1b9d include/DS1337/DS1337.o
- .debug_info    0x00001b9d     0x2968 main.o
- .debug_info    0x00004505     0x1a28 src/HardwareSerial.o
- .debug_info    0x00005f2d     0x16ff src/HardwareSerial0.o
- .debug_info    0x0000762c       0x3e src/hooks.o
- .debug_info    0x0000766a      0x98f src/IPAddress.o
- .debug_info    0x00007ff9      0x1f0 src/main.o
- .debug_info    0x000081e9     0x25a5 src/Print.o
- .debug_info    0x0000a78e     0x1f52 src/RTClib.o
- .debug_info    0x0000c6e0      0x73f src/Tone.o
- .debug_info    0x0000ce1f      0x6b1 src/twi.o
- .debug_info    0x0000d4d0      0x200 src/WInterrupts.o
- .debug_info    0x0000d6d0     0x2204 src/Wire.o
- .debug_info    0x0000f8d4      0x2bb src/wiring.o
- .debug_info    0x0000fb8f      0x2d1 src/wiring_analog.o
- .debug_info    0x0000fe60      0x5d6 src/wiring_digital.o
+ .debug_info    0x00001b9d     0x296c main.o
+ .debug_info    0x00004509     0x1a28 src/HardwareSerial.o
+ .debug_info    0x00005f31     0x16ff src/HardwareSerial0.o
+ .debug_info    0x00007630       0x3e src/hooks.o
+ .debug_info    0x0000766e      0x98f src/IPAddress.o
+ .debug_info    0x00007ffd      0x1f0 src/main.o
+ .debug_info    0x000081ed     0x25a5 src/Print.o
+ .debug_info    0x0000a792     0x1f52 src/RTClib.o
+ .debug_info    0x0000c6e4      0x73f src/Tone.o
+ .debug_info    0x0000ce23      0x6b1 src/twi.o
+ .debug_info    0x0000d4d4      0x200 src/WInterrupts.o
+ .debug_info    0x0000d6d4     0x2204 src/Wire.o
+ .debug_info    0x0000f8d8      0x2bb src/wiring.o
+ .debug_info    0x0000fb93      0x2d1 src/wiring_analog.o
+ .debug_info    0x0000fe64      0x5d6 src/wiring_digital.o
 
 .debug_abbrev   0x00000000     0x2c52
  *(.debug_abbrev)

@@ -15,19 +15,19 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
   5 .debug_aranges 00000790  00000000  00000000  00002998  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_info   00010436  00000000  00000000  00003128  2**0
+  6 .debug_info   0001043a  00000000  00000000  00003128  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_abbrev 00002c52  00000000  00000000  0001355e  2**0
+  7 .debug_abbrev 00002c52  00000000  00000000  00013562  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   0000288b  00000000  00000000  000161b0  2**0
+  8 .debug_line   0000288b  00000000  00000000  000161b4  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  000017a0  00000000  00000000  00018a3c  2**2
+  9 .debug_frame  000017a0  00000000  00000000  00018a40  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    000033d5  00000000  00000000  0001a1dc  2**0
+ 10 .debug_str    000033d5  00000000  00000000  0001a1e0  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00008d94  00000000  00000000  0001d5b1  2**0
+ 11 .debug_loc    00008d94  00000000  00000000  0001d5b5  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 000007e8  00000000  00000000  00026345  2**0
+ 12 .debug_ranges 000007e8  00000000  00000000  00026349  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -309,10 +309,10 @@ Disassembly of section .text:
 	...
 
 0000029b <_ZZ4InitvE3__c>:
-     29b:	4f 63 74 20 32 35 20 32 30 31 35 00                 Oct 25 2015.
+     29b:	4e 6f 76 20 20 31 20 32 30 31 35 00                 Nov  1 2015.
 
 000002a7 <_ZZ4InitvE3__c_0>:
-     2a7:	32 33 3a 32 32 3a 33 34 00                          23:22:34.
+     2a7:	30 37 3a 34 32 3a 32 34 00                          07:42:24.
 
 000002b0 <_ZL21tone_pin_to_timer_PGM>:
      2b0:	02                                                  .
@@ -1816,6 +1816,7 @@ uint8_t ds1337_clear_control_bits(uint8_t mask) {
 	return ds1337_set_control(~mask);
      b0c:	80 95       	com	r24
      b0e:	0e 94 72 05 	call	0xae4	; 0xae4 <_Z18ds1337_set_controlh>
+}
      b12:	08 95       	ret
 
 00000b14 <_Z4Initv>:
@@ -1846,8 +1847,8 @@ void Init()
      b2c:	89 e6       	ldi	r24, 0x69	; 105
      b2e:	91 e0       	ldi	r25, 0x01	; 1
      b30:	0e 94 6c 07 	call	0xed8	; 0xed8 <_ZN14HardwareSerial5beginEmh>
-	
-	//Coms will be setup later.
+	//the internal crystal is not much better and during battery power
+	//will correctly work at around 4800 baud. need to do auto bauding
 	Serial.begin(9600);
 	//Serial.begin(115200);
 	
@@ -2119,41 +2120,38 @@ void Init()
      cfc:	83 b7       	in	r24, 0x33	; 51
      cfe:	81 60       	ori	r24, 0x01	; 1
      d00:	83 bf       	out	0x33, r24	; 51
+	
+	//allow interrupts
+	sei();
+     d02:	78 94       	sei
+	
+	//Interrupts
+	attachInterrupt(0, Interrupt_Update, RISING);
+     d04:	43 e0       	ldi	r20, 0x03	; 3
+     d06:	50 e0       	ldi	r21, 0x00	; 0
+     d08:	68 e5       	ldi	r22, 0x58	; 88
+     d0a:	73 e0       	ldi	r23, 0x03	; 3
+     d0c:	80 e0       	ldi	r24, 0x00	; 0
+     d0e:	0e 94 69 0e 	call	0x1cd2	; 0x1cd2 <attachInterrupt>
 }
-     d02:	26 96       	adiw	r28, 0x06	; 6
-     d04:	0f b6       	in	r0, 0x3f	; 63
-     d06:	f8 94       	cli
-     d08:	de bf       	out	0x3e, r29	; 62
-     d0a:	0f be       	out	0x3f, r0	; 63
-     d0c:	cd bf       	out	0x3d, r28	; 61
-     d0e:	df 91       	pop	r29
-     d10:	cf 91       	pop	r28
-     d12:	08 95       	ret
+     d12:	26 96       	adiw	r28, 0x06	; 6
+     d14:	0f b6       	in	r0, 0x3f	; 63
+     d16:	f8 94       	cli
+     d18:	de bf       	out	0x3e, r29	; 62
+     d1a:	0f be       	out	0x3f, r0	; 63
+     d1c:	cd bf       	out	0x3d, r28	; 61
+     d1e:	df 91       	pop	r29
+     d20:	cf 91       	pop	r28
+     d22:	08 95       	ret
 
-00000d14 <setup>:
+00000d24 <setup>:
 
 void setup()
 {
 		
 	//Initialize the clock
 	Init();
-     d14:	0e 94 8a 05 	call	0xb14	; 0xb14 <_Z4Initv>
-	
-	//clear display at start up.
-	//BlankDisplay();
-
-	//allow interrupts
-	sei();
-     d18:	78 94       	sei
-	
-	//Interrupts
-	attachInterrupt(0, Interrupt_Update, RISING);
-     d1a:	43 e0       	ldi	r20, 0x03	; 3
-     d1c:	50 e0       	ldi	r21, 0x00	; 0
-     d1e:	68 e5       	ldi	r22, 0x58	; 88
-     d20:	73 e0       	ldi	r23, 0x03	; 3
-     d22:	80 e0       	ldi	r24, 0x00	; 0
-     d24:	0e 94 69 0e 	call	0x1cd2	; 0x1cd2 <attachInterrupt>
+     d24:	0e 94 8a 05 	call	0xb14	; 0xb14 <_Z4Initv>
      d28:	08 95       	ret
 
 00000d2a <_ZN14HardwareSerial9availableEv>:
@@ -3061,7 +3059,7 @@ int main(void)
 #endif
 	
 	setup();
-    117a:	0e 94 8a 06 	call	0xd14	; 0xd14 <setup>
+    117a:	0e 94 92 06 	call	0xd24	; 0xd24 <setup>
     
 	for (;;) {
 		loop();
