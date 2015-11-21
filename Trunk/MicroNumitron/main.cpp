@@ -78,6 +78,8 @@ int alarmHH = 0;
 int alarmMM = 0;
 int alarm_check = 0;
 int alarm_Silence = 0;
+int long UP_TIME = 0;			//used for battery testing.
+int MINUTS_LAST = 0;
 
 //RTC_DS1307 rtc;             //Creating a new RTC object.
 DS1337 RTC = DS1337();
@@ -131,6 +133,8 @@ void menu();
 void soundAlarm();
 void setTime();
 void setALARM();
+void EEPROMWritelong(long value);
+//void EEPROMReadlong(long address);
 
 
 
@@ -193,6 +197,12 @@ void loop()
 			SECONDS_LAST = RTC.getSeconds();
 		}
 	}
+	if(UP_TIME >= 59)
+	{
+		UP_TIME++;
+		EEPROMWritelong(UP_TIME);
+		UP_TIME = 0;
+	}
 }
 
 void gotoSleep(int _delay)
@@ -209,7 +219,7 @@ void gotoSleep(int _delay)
 }
 
 
-void Interrupt_Update(){} //This is just to attach an interrupt
+void Interrupt_Update(){UP_TIME++;} //This is just to attach an interrupt
 
 void Init()
 {
@@ -1063,6 +1073,37 @@ void soundAlarm()
 	//PPS_COUNT = 0;
 	SECONDS_LAST = RTC.getSeconds();
 	attachInterrupt(0, Interrupt_Update, RISING);
+}
+
+void EEPROMWritelong(long value)
+{
+	//we use this to measure battery life, this is not exact.
+	//we write to address 100.
+	
+	//Decomposition from a long to 4 bytes by using bitshift.
+	//One = Most significant -> Four = Least significant byte
+	byte four = (value & 0xFF);
+	byte three = ((value >> 8) & 0xFF);
+	byte two = ((value >> 16) & 0xFF);
+	byte one = ((value >> 24) & 0xFF);
+
+	//Write the 4 bytes into the eeprom memory.
+	EEPROM.write(100, four);
+	EEPROM.write(100 + 1, three);
+	EEPROM.write(100 + 2, two);
+	EEPROM.write(100 + 3, one);
+}
+
+long EEPROMReadlong(long address)
+{
+	//Read the 4 bytes from the eeprom memory.
+	long four = EEPROM.read(100);
+	long three = EEPROM.read(100 + 1);
+	long two = EEPROM.read(100 + 2);
+	long one = EEPROM.read(100 + 3);
+
+	//Return the recomposed long by using bitshift.
+	return ((four << 0) & 0xFF) + ((three << 8) & 0xFFFF) + ((two << 16) & 0xFFFFFF) + ((one << 24) & 0xFFFFFFFF);
 }
 
 void alarmEEPROM(byte hour, byte minute, int AP,int AT)
