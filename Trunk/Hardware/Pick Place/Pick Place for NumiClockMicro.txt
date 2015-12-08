@@ -1,0 +1,46 @@
+Designator Footprint               Mid X         Mid Y         Ref X         Ref Y         Pad X         Pad Y TB      Rotation Comment        
+
+Y3         ABS05                  398mil    500.654mil        398mil        479mil        398mil        479mil  T         90.00 32.768KHz      
+J2         3x2_50mil_header_FCI        830mil        865mil        830mil        915mil    755.197mil        915mil  T        270.00 HEADER 3x2 50mil FCI
+C1         C1608N                 565mil        745mil        565mil        745mil        565mil    778.465mil  T        270.00 C103_0603_X7R_50V0_5%_Kemet
+C2         C1005N                 765mil        495mil        765mil        495mil        765mil    471.378mil  T         90.00 C104_0402_X7R_16V0_10%_Kemet
+C5         C1005N                 725mil        470mil        725mil        470mil        725mil    446.378mil  T         90.00 C103_0402_X7R_25.0V_5%_Kemet
+C8         C1005N                 389mil        607mil        389mil        607mil        389mil    630.622mil  T        270.00 C103_0402_X7R_25.0V_5%_Kemet
+C9         C1005N                 500mil        375mil        500mil        375mil    476.378mil        375mil  T        360.00 C103_0402_X7R_25.0V_5%_Kemet
+C10        C1005N                 814mil        495mil        814mil        495mil        814mil    471.378mil  T         90.00 C103_0402_X7R_25.0V_5%_Kemet
+C11        C1608L                 335mil        525mil        335mil        525mil        335mil    554.528mil  T        270.00 C120-0603-COG-NPO-5%
+C12        C1608L                 335mil        385mil        335mil        385mil        335mil    355.473mil  T         90.00 C120-0603-COG-NPO-5%
+D2         DIODE-USC              757mil    276.559mil        757mil    321.834mil        757mil    321.834mil  T        270.00 CUS08F30       
+R1         C1005N                 625mil        735mil        625mil        735mil        625mil    758.622mil  T        270.00 10K            
+R2         C1005N                 190mil        705mil        190mil        705mil        190mil    681.378mil  T         90.00 10K            
+R3         C1005N                 380mil        850mil        380mil        850mil    356.378mil        850mil  T        360.00 R472-0402-1%   
+R5         C1005N                 385mil        905mil        385mil        905mil    361.378mil        905mil  T          0.00 R472-0402-1%   
+R6         C1005N                 190mil        260mil        190mil        260mil        190mil    236.378mil  T         90.00 10K            
+U1         28M1_N                 565mil        540mil        565mil        540mil    485.276mil     593.15mil  T        360.00 ATmega168A-MMH 
+Y1         NDK_8MHZ_CRYSTAL        235mil    453.661mil        235mil        495mil        235mil        495mil  T        270.00 CRYSTAL_8Mhz_8pF_Micro_NDK
+Y2         ABS05                   35mil    916.654mil         35mil        895mil         35mil        895mil  T         90.00 32.768KHz      
+U2         U8+1_N                 185mil        890mil        185mil        890mil    102.323mil    928.386mil  T        360.00 DS1337U+       
+U3         MAA05A_N               895mil        611mil        895mil        611mil    857.598mil    636.591mil  T        360.00 LM20CIM7/NOPB  
+C6         C1608L                 235mil        742mil        235mil        742mil    264.527mil        742mil  B        180.00 C475-0603-X5R-20%
+C7         C1608L                 304mil        717mil        304mil        717mil        304mil    746.528mil  B        270.00 C475-0603-X5R-20%
+D1         LEDCP2015X08L           50mil        615mil         50mil        615mil         50mil    656.339mil  B        270.00 LED-GRN-0805-LUMEX-SML-LXT0805SGW
+D4         SOT23_95P237x111-3N        110mil        703mil        110mil        703mil    157.244mil    740.402mil  B        180.00 TVS_MMBZ20VALT1G_OnSemi
+J1         CONN_USB_MIcro         210mil    862.914mil        210mil        920mil    158.818mil    809.764mil  B        270.00 MICRO_USB_AB   
+R4         C1005L                 167mil        602mil        167mil        602mil        167mil    621.685mil  B        270.00 R473-0402-5%   
+R7         C1005L                 115mil        623mil        115mil        623mil    134.685mil        623mil  B        180.00 R331-0402-5%   
+U4         DFN-MC8                227mil        642mil        227mil        642mil    197.472mil    699.087mil  B        270.00 MCP73831T-2ATI/MC
+U5         QFN50P350X250X100_HS-17N        525mil        255mil        525mil        255mil    534.842mil    180.197mil  T         90.00 IC_LS74HC595_TI_QFN
+B1         LIPO_110mAh        195.568mil    368.005mil        191mil        373mil     316.63mil    407.374mil  B        270.00 LIPO_400mAh_Sparkfun
+D5         DIODE-USC              417mil    697.724mil        417mil        743mil        417mil        743mil  B        270.00 CUS08F30       
+D6         DIODE-USC              357mil    697.724mil        357mil        743mil        357mil        743mil  B        270.00 CUS08F30       
+SW1        SPST_NO_6x3.5           85mil        640mil         85mil        640mil         85mil        545mil  T         90.00 SPST-NO_6mm_x_3.5mm
+SW2        SPST_NO_6x3.5           85mil        305mil         85mil        305mil         85mil        210mil  T         90.00 SPST-NO_6mm_x_3.5mm
+SW3        SPST_NO_6x3.5          880mil        305mil        880mil        305mil        880mil        210mil  T         90.00 SPST-NO_6mm_x_3.5mm
+J3         CONN_2P_SINGLE_100MIL        541mil        891mil        591mil        891mil        591mil        891mil  T        270.00 HEADER1X2      
+D7         DIODE-USC          753.276mil        701mil        708mil        701mil        708mil        701mil  B        360.00 CUS08F30       
+R8         C1608N                 899mil        791mil        899mil        791mil    932.465mil        791mil  B        180.00 1.24M          
+R9         C1608N                 715mil        790mil        715mil        790mil    748.465mil        790mil  B        180.00 R123_0603_5%_Panasonic
+R10        C1608L                 805mil        777mil        805mil        777mil        805mil    747.472mil  B         90.00 R643R9-0603-1%_Yageo
+SC1        SUPCAP_330MF           830mil    406.929mil        830mil        590mil        830mil        590mil  B        180.00 SUPCAP_330MF_SMD
+U6         PW8_N                  809mil        892mil        809mil        892mil    921.205mil    930.386mil  B        180.00 TPS2113APWR    
+

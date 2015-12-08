@@ -1,0 +1,17 @@
+---------------------------------------------------------------------------
+NCDrill File Report For: NumiClockMicro.PcbDoc   10/24/2015  2:07:23 AM
+---------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : NumiClockMicro.TXT
+
+Tool         Hole Size           Hole Type     Hole Count Plated       Tool Travel
+---------------------------------------------------------------------------
+T1        7.87mil (0.1999mm)       Round          10               0.87 Inch (22.00 mm)
+T2        12mil (0.3048mm)         Round          43               4.95 Inch (125.64 mm)
+T3        13mil (0.3302mm)         Round          1                0.00 Inch (0.00 mm)
+T4        37mil (0.9398mm)         Round          11               1.77 Inch (44.97 mm)
+---------------------------------------------------------------------------
+Totals                                            65               7.58 Inch (192.61 mm)
+
+Total Processing Time (hh:mm:ss) : 00:00:00
