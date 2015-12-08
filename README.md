@@ -1,2 +1,3 @@
 # MicroNumitron
-Source code for Had.io square inch project.
+Source code / hardware files for Had.io square inch project.
+
