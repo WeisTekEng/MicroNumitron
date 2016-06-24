@@ -209,6 +209,8 @@ void gotoSleep(int _delay)
 {
 	//Need to set all pins as outputs and pull high
 	//This should reduce the sleep current from 6ma to ~ mA
+	//if pin is connected but not being currently used output and low
+	//if floating input and low.
 	
 	sleep_enable();
     byte adcsraSave = ADCSRA;
