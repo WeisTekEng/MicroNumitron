@@ -207,6 +207,9 @@ void loop()
 
 void gotoSleep(int _delay)
 {
+	//Need to set all pins as outputs and pull high
+	//This should reduce the sleep current from 6ma to ~ mA
+	
 	sleep_enable();
     byte adcsraSave = ADCSRA;
     ADCSRA &= ~ bit(ADEN); // disable the ADC
